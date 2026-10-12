@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Library | Digital Library</title>
+<style>
+:root {
+  --navy: #142b4a;
+  --blue: #315de8;
+  --bg: #f5f7fc;
+  --text: #202b3c;
+  --muted: #718096;
+  --border: #e4e9f2;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+button, input { font: inherit; }
+button { cursor: pointer; }
+.topbar {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 17px 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon {
+  background: var(--navy);
+  color: white;
+  border-radius: 12px;
+  padding: 11px;
+  font-size: 23px;
+}
+.brand h2 { margin: 0; font-size: 19px; }
+.brand small { color: var(--muted); }
+.online { color: #16834b; font-weight: 700; font-size: 14px; }
+.hero {
+  background: linear-gradient(120deg, #142b4a, #264d86);
+  color: white;
+  padding: 44px 6%;
+}
+.hero .eyebrow {
+  color: #c9d9ff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.hero h1 { font-size: clamp(28px, 4vw, 42px); margin: 12px 0; }
+.hero p { color: #dbe6f8; max-width: 620px; line-height: 1.7; }
+main { max-width: 1250px; margin: 30px auto; padding: 0 24px; }
+.section-title {
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.section-title h2 { margin: 0 0 7px; font-size: 23px; }
+.subtitle { color: var(--muted); font-size: 14px; }
+.stats {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 17px; margin: 25px 0 32px;
+}
+.stat {
+  background: white; border: 1px solid var(--border);
+  padding: 22px; border-radius: 16px;
+  box-shadow: 0 4px 15px #142b4a08;
+}
+.stat-label { color: var(--muted); font-size: 13px; }
+.stat-value { font-size: 30px; font-weight: 750; margin-top: 10px; }
+.stat-icon { font-size: 22px; }
+.panel {
+  background: white; border: 1px solid var(--border);
+  border-radius: 18px; padding: 25px; margin-bottom: 25px;
+  box-shadow: 0 5px 20px #142b4a08;
+}
+.toolbar {
+  display: flex; gap: 12px; margin: 22px 0;
+}
+input {
+  width: 100%; min-width: 0; padding: 13px 15px;
+  border: 1px solid #d9e0eb; border-radius: 10px;
+  background: white; outline: none;
+}
+input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #315de817; }
+.btn {
+  border: 0; border-radius: 10px; padding: 12px 18px;
+  background: var(--blue); color: white; font-weight: 650;
+  white-space: nowrap;
+}
+.btn:hover { filter: brightness(.94); }
+.btn-light { background: #edf2ff; color: #3150b9; }
+.book-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.book {
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 17px; min-width: 0; transition: .2s;
+}
+.book:hover { transform: translateY(-3px); box-shadow: 0 9px 24px #142b4a12; }
+.book-cover {
+  height: 125px; border-radius: 10px; margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px; background: linear-gradient(135deg,#dce8ff,#f0e8ff);
+}
+.book:nth-child(3n + 2) .book-cover {
+  background: linear-gradient(135deg,#d9f5eb,#e8f0ff);
+}
+.book:nth-child(3n) .book-cover {
+  background: linear-gradient(135deg,#ffe9d9,#fff3d5);
+}
+.book h3 { font-size: 17px; line-height: 1.45; margin: 0 0 12px; }
+.book-id { font-size: 12px; color: var(--muted); }
+.book-bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 8px; margin-top: 17px; padding-top: 14px;
+  border-top: 1px solid var(--border); font-size: 13px;
+}
+.pill { background: #e4f8ed; color: #167547; padding: 6px 9px; border-radius: 20px; }
+.pill.out { background: #fff0e5; color: #a45112; }
+.message { margin-top: 15px; font-size: 14px; font-weight: 600; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+.empty { color: var(--muted); padding: 25px 0; text-align: center; }
+footer { text-align: center; padding: 25px; color: var(--muted); font-size: 13px; }
+@media (max-width: 850px) {
+  .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .book-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 550px) {
+  .hero { padding: 30px 22px; }
+  main { padding: 0 14px; margin-top: 18px; }
+  .panel { padding: 17px; }
+  .book-grid, .form-grid { grid-template-columns: 1fr; }
+  .toolbar { flex-wrap: wrap; }
+  .topbar { padding: 14px; }
+  .brand small { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="brand">
+    <div class="brand-icon">📚</div>
+    <div>
+      <h2>Smart Library</h2>
+      <small>Library management portal</small>
+    </div>
+  </div>
+  <div class="online">● <span id="health">Connecting...</span></div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">Your digital knowledge hub</div>
+  <h1>Discover your next great read.</h1>
+  <p>Explore the catalogue, check book availability, and manage borrowing from one simple library portal.</p>
+</section>
+
+<main>
+  <section class="section-title">
+    <div>
+      <h2>Library overview</h2>
+      <div class="subtitle">A quick look at your collection</div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <article class="stat">
+      <div class="stat-icon">📚</div>
+      <div class="stat-label">Book titles</div>
+      <div class="stat-value" id="titleCount">—</div>
+    </article>
+    <article class="stat">
+      <div class="stat-icon">📦</div>
+      <div class="stat-label">Total copies</div>
+      <div class="stat-value" id="totalCopies">—</div>
+    </article>
+    <article class="stat">
+      <div class="stat-icon">✅</div>
+      <div class="stat-label">Available copies</div>
+      <div class="stat-value" id="availableCopies">—</div>
+    </article>
+    <article class="stat">
+      <div class="stat-icon">📖</div>
+      <div class="stat-label">Issued copies</div>
+      <div class="stat-value" id="issuedCopies">—</div>
+    </article>
+  </section>
+
+  <section class="panel" id="catalogue">
+    <div class="section-title">
+      <div>
+        <h2>Explore the catalogue</h2>
+        <div class="subtitle">Find a book by its title or ID.</div>
+      </div>
+      <span class="subtitle" id="resultCount"></span>
+    </div>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search books by title or ID..." aria-label="Search books">
+      <button class="btn" onclick="loadBooks()">Search</button>
+      <button class="btn btn-light" onclick="showAll()">Show all</button>
+    </div>
+    <div id="message" class="message" role="status"></div>
+    <div id="books" class="book-grid">Loading catalogue...</div>
+  </section>
+ 
+<section class="panel" id="registered-users">
+    <h2>Registered Users</h2>
+    <p class="subtitle">Use these registered user IDs to borrow or return books.</p>
+
+    <div class="user-list">
+        <div class="user-card">
+            <h3>Alice Johnson</h3>
+            <p><strong>User ID:</strong> U101</p>
+            <p><strong>Role:</strong> Student</p>
+        </div>
+
+        <div class="user-card">
+            <h3>Dr Robert Smith</h3>
+            <p><strong>User ID:</strong> U102</p>
+            <p><strong>Role:</strong> Faculty</p>
+        </div>
+    </div>
+</section>
+
+  <section class="panel" id="circulation">
+    <h2>Book circulation</h2>
+    <p class="subtitle">Use your registered user ID and the book ID to borrow or return a book.</p>
+    <div class="form-grid">
+      <input id="userId" placeholder="User ID (e.g. U101)" aria-label="User ID">
+      <input id="bookId" placeholder="Book ID (e.g. B001)" aria-label="Book ID">
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="circulate('/api/borrow')">Borrow book</button>
+      <button class="btn btn-light" onclick="circulate('/api/return')">Return book</button>
+    </div>
+    <div id="circulationMessage" class="message" role="status"></div>
+  </section>
+</main>
+
+<footer>Smart Library Management System · Powered by Flask</footer>
+
+<script>
+let currentBooks = [];
+
+async function loadDashboard() {
+  try {
+    const response = await fetch('/api/dashboard');
+    if (!response.ok) throw new Error('Dashboard unavailable');
+
+    const stats = await response.json();
+
+    document.getElementById('titleCount').textContent = stats.total_books;
+    document.getElementById('totalCopies').textContent = stats.total_copies;
+    document.getElementById('availableCopies').textContent = stats.available_copies;
+    document.getElementById('issuedCopies').textContent = stats.currently_borrowed;
+  } catch (error) {
+    console.error('Could not load dashboard:', error);
+  }
+}
+
+async function checkHealth() {
+  const label = document.getElementById('health');
+  try {
+    const response = await fetch('/api/health');
+    label.textContent = response.ok ? 'System online' : 'Unavailable';
+  } catch {
+    label.textContent = 'Unavailable';
+  }
+}
+
+function updateStats(books) {
+  const total = books.reduce((sum, book) => sum + Number(book.total_copies || 0), 0);
+  const available = books.reduce((sum, book) => sum + Number(book.available_copies || 0), 0);
+  document.getElementById('titleCount').textContent = books.length;
+  document.getElementById('totalCopies').textContent = total;
+  document.getElementById('availableCopies').textContent = available;
+  document.getElementById('issuedCopies').textContent = total - available;
+}
+
+function renderBooks(books) {
+  const container = document.getElementById('books');
+  container.replaceChildren();
+  document.getElementById('resultCount').textContent =
+    books.length + (books.length === 1 ? ' book' : ' books');
+
+  if (!books.length) {
+    container.className = 'empty';
+    container.textContent = 'No books found. Try another search.';
+    return;
+  }
+
+  container.className = 'book-grid';
+  books.forEach((book, index) => {
+    const card = document.createElement('article');
+    card.className = 'book';
+
+    const cover = document.createElement('div');
+    cover.className = 'book-cover';
+    cover.textContent = ['📘', '📗', '📙', '📕', '📓'][index % 5];
+    cover.setAttribute('aria-hidden', 'true');
+
+    const id = document.createElement('div');
+    id.className = 'book-id';
+    id.textContent = 'BOOK ID · ' + book.book_id;
+
+    const title = document.createElement('h3');
+    title.textContent = book.title;
+
+    const bottom = document.createElement('div');
+    bottom.className = 'book-bottom';
+
+    const copies = document.createElement('span');
+    copies.textContent = book.available_copies + ' of ' + book.total_copies + ' available';
+
+    const badge = document.createElement('span');
+    badge.className = 'pill' + (book.available_copies <= 0 ? ' out' : '');
+    badge.textContent = book.available_copies <= 0 ? 'Unavailable' : 'Available';
+
+    bottom.append(copies, badge);
+    card.append(cover, id, title, bottom);
+    container.appendChild(card);
+  });
+}
+
+async function loadBooks() {
+  const query = document.getElementById('search').value.trim();
+  const container = document.getElementById('books');
+  const message = document.getElementById('message');
+  container.textContent = 'Loading catalogue...';
+  container.className = 'empty';
+  message.textContent = '';
+
+  try {
+    const url = query
+      ? '/api/books?search=' + encodeURIComponent(query)
+      : '/api/books';
+    const response = await fetch(url);
+    const books = await response.json();
+    if (!response.ok) throw new Error('Unable to load books');
+
+    currentBooks = books;
+    updateStats(books);
+    renderBooks(books);
+  } catch {
+    container.textContent = 'Could not load the catalogue. Please refresh.';
+    message.textContent = 'Unable to connect to the library service.';
+  }
+}
+
+function showAll() {
+  document.getElementById('search').value = '';
+  loadBooks();
+}
+
+async function circulate(endpoint) {
+  const output = document.getElementById('circulationMessage');
+  const user_id = document.getElementById('userId').value.trim();
+  const book_id = document.getElementById('bookId').value.trim();
+
+  if (!user_id || !book_id) {
+    output.textContent = 'Please enter both user ID and book ID.';
+    return;
+  }
+
+  output.textContent = 'Processing request...';
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({user_id, book_id})
+    });
+    const result = await response.json();
+    output.textContent = response.ok
+      ? (result.message || 'Request completed successfully.')
+      : (result.error || 'Request failed.');
+    await loadBooks();
+  } catch {
+    output.textContent = 'Unable to contact the library service.';
+  }
+}
+
+document.getElementById('search').addEventListener('keydown', event => {
+  if (event.key === 'Enter') loadBooks();
+});
+
+checkHealth();
+loadDashboard();
+loadBooks();
+</script>
+</body>
+</html>
