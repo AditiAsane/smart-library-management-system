@@ -41,51 +41,77 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            steps {
-                sh '''
-                    set -eu
+        
+stage('Deploy') {
+    steps {
+        sh '''
+            set -eu
 
-                    docker rm -f "${APP_CONTAINER}-previous" 2>/dev/null || true
+            BACKUP="${APP_CONTAINER}-previous"
 
-                    if docker container inspect "$APP_CONTAINER" >/dev/null 2>&1; then
-                        docker rename "$APP_CONTAINER" "${APP_CONTAINER}-previous"
-                    fi
+            echo "Starting deployment..."
 
-                    if ! docker run -d \
-                        --name "$APP_CONTAINER" \
-                        --restart unless-stopped \
-                        -p "${APP_PORT}:5000" \
-                        "$APP_IMAGE"; then
-                        docker rm -f "$APP_CONTAINER" 2>/dev/null || true
+            # Remove stale backup
+            docker rm -f "$BACKUP" 2>/dev/null || true
 
-                        if docker container inspect "${APP_CONTAINER}-previous" >/dev/null 2>&1; then
-                            docker rename "${APP_CONTAINER}-previous" "$APP_CONTAINER"
-                            docker start "$APP_CONTAINER"
-                        fi
+            # Preserve the existing application
+            if docker container inspect "$APP_CONTAINER" >/dev/null 2>&1; then
+                docker stop "$APP_CONTAINER"
+                docker rename "$APP_CONTAINER" "$BACKUP"
+            fi
 
-                        exit 1
-                    fi
+            # Start the new application
+            if ! docker run -d \
+                --name "$APP_CONTAINER" \
+                --restart unless-stopped \
+                -p "${APP_PORT}:5000" \
+                "$APP_IMAGE"; then
 
-                    sleep 5
+                echo "Container startup failed. Rolling back..."
+                docker rm -f "$APP_CONTAINER" 2>/dev/null || true
 
-                    if ! curl --fail --silent \
-                        http://127.0.0.1:${APP_PORT}/api/health; then
-                        docker rm -f "$APP_CONTAINER" || true
+                if docker container inspect "$BACKUP" >/dev/null 2>&1; then
+                    docker rename "$BACKUP" "$APP_CONTAINER"
+                    docker start "$APP_CONTAINER"
+                fi
 
-                        if docker container inspect "${APP_CONTAINER}-previous" >/dev/null 2>&1; then
-                            docker rename "${APP_CONTAINER}-previous" "$APP_CONTAINER"
-                            docker start "$APP_CONTAINER"
-                        fi
+                exit 1
+            fi
 
-                        exit 1
-                    fi
+            # Check that the application responds
+            echo "Checking application health..."
+            HEALTHY=0
 
-                    docker rm -f "${APP_CONTAINER}-previous" 2>/dev/null || true
-                '''
-            }
-        }
+            for i in $(seq 1 15); do
+                if curl -fsS "http://127.0.0.1:${APP_PORT}/" >/dev/null; then
+                    HEALTHY=1
+                    break
+                fi
+                sleep 2
+            done
+
+            # Roll back if health check fails
+            if [ "$HEALTHY" -ne 1 ]; then
+                echo "Health check failed. Rolling back..."
+                docker rm -f "$APP_CONTAINER" 2>/dev/null || true
+
+                if docker container inspect "$BACKUP" >/dev/null 2>&1; then
+                    docker rename "$BACKUP" "$APP_CONTAINER"
+                    docker start "$APP_CONTAINER"
+                fi
+
+                exit 1
+            fi
+
+            # Remove backup only after successful health check
+            docker rm -f "$BACKUP" 2>/dev/null || true
+
+            echo "Deployment completed successfully!"
+        '''
     }
+}
+
+  
 
     post {
         always {
